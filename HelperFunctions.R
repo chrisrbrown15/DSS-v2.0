@@ -16,8 +16,6 @@ DOSE_RESPONSE_PROCESS <- function(dose_responses, viability = T){
   return(list(dose_responses, dose_responses_grouped))
 }
 
-
-
 CALC_METRICS <- function(dose_responses, dose_responses_grouped, graph = F){
   start.time <- Sys.time()
   iter <- nrow(dose_responses_grouped)
@@ -29,22 +27,22 @@ CALC_METRICS <- function(dose_responses, dose_responses_grouped, graph = F){
   for(it in 1:iter){
     df.DSS.ctx <- CALC_IC50_EC50_DSS(it, dose_responses_grouped, dose_responses, DSS_typ = '2', graph = graph)
     list.believe[[it]] <- data.frame(believe_DSS = df.DSS.ctx[[3]])
-    list.AUC_DSS[[it]] <- data.frame(AUC = df.DSS.ctx[[1]]$AUC,DSS1 = df.DSS.ctx[[5]],
-                                     DSS2 = df.DSS.ctx[[6]],DSS3 = df.DSS.ctx[[7]])
+    list.AUC_DSS[[it]] <- data.frame(AUC = df.DSS.ctx[[1]]$AUC, DSS1 = df.DSS.ctx[[5]],
+                                     DSS2 = df.DSS.ctx[[6]], DSS3 = df.DSS.ctx[[7]],
+                                     SLOPE = df.DSS.ctx[[1]]$SLOPE,
+                                     MAX = df.DSS.ctx[[1]]$MAX,
+                                     MIN = df.DSS.ctx[[1]]$MIN)
     list.IC50[[it]] <- data.frame(IC50 = df.DSS.ctx[[8]])
-    rm( df.DSS.ctx)
+    rm(df.DSS.ctx)
     svMisc::progress(it/iter*100)
   }
   df.believe <- bind_rows(list.believe)
   list.AUC_DSS <- bind_rows(list.AUC_DSS)
   df.IC50_metrics <- bind_rows(list.IC50)
-  df.metric <- cbind( dose_responses_grouped, list.AUC_DSS, df.IC50_metrics, df.believe)
+  df.metric <- cbind(dose_responses_grouped, list.AUC_DSS, df.IC50_metrics, df.believe)
   message("Finished DSS computations in ", round(Sys.time() - start.time, 2), units(Sys.time() - start.time))
   return(df.metric)
-  
 }
-
-
 
 DRUG_FILTER_SYNONYMS <- function(inputdrug, druglibrary){
   start.time <- Sys.time()
